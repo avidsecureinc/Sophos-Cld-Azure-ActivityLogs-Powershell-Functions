@@ -177,7 +177,7 @@ namespace NwNsgProject
 			   		if(storageId.Equals("null")){
 			   			break;
 		   			}
-		   			check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
+		   			await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
 		   			
 		   		}
 		   	}
@@ -191,7 +191,7 @@ namespace NwNsgProject
 
 		   	foreach (string location_check in all_locations){
 		   		if(!allnsgloc.ContainsKey(location_check)){
-		   			check_delete_storage_account(token, subs_id, location_check ,log);
+		   			await check_delete_storage_account(token, subs_id, location_check ,log);
 		   		}
 		   	}
         }
@@ -367,7 +367,7 @@ namespace NwNsgProject
 	            	int milliseconds = 80000;
 					Thread.Sleep(milliseconds);
 
-					create_retention_policy(token, subs_id, storage_account_name, log);
+					await create_retention_policy(token, subs_id, storage_account_name, log);
 					await listKeys(token, storage_account_name, storage_account_name_activity, appNameStage1, subs_id, log);
 	                
 	            }
@@ -539,7 +539,7 @@ namespace NwNsgProject
 
 					string data =  await response.Content.ReadAsStringAsync();
 				    var result = JsonConvert.DeserializeObject<StorageAccountProp>(data);
-				    remove_resources(storage_account_name, appNameStage1, token, subs_id, location, log);
+				    await remove_resources(storage_account_name, appNameStage1, token, subs_id, location, log);
 				}
 			}
 			catch (System.Net.Http.HttpRequestException e)
