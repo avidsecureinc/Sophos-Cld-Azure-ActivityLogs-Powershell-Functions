@@ -22,7 +22,7 @@ namespace NwNsgProject
         public static async Task Run(
             [QueueTrigger("activitystage2", Connection = "AzureWebJobsStorage")]Chunk inputChunk,
             Binder binder,
-            TraceWriter log)
+            ILogger log)
         {
             //log.LogInformation($"C# Queue trigger function processed: {inputChunk}");
 
@@ -64,13 +64,13 @@ namespace NwNsgProject
 
         }
 
-        public static async Task SendMessagesDownstream(string myMessages, TraceWriter log)
+        public static async Task SendMessagesDownstream(string myMessages, ILogger log)
         {
             await obAvidSecure(myMessages, log);
             
         }
 
-        static async Task obAvidSecure(string newClientContent, TraceWriter log)
+        static async Task obAvidSecure(string newClientContent, ILogger log)
         {
 
             string avidAddress = Util.GetEnvironmentVariable("avidActivityAddress");

@@ -17,7 +17,7 @@ namespace NwNsgProject
             [QueueTrigger("activitystage1", Connection = "AzureWebJobsStorage")]Chunk inputChunk,
             [Queue("activitystage2", Connection = "AzureWebJobsStorage")] ICollector<Chunk> outputQueue,
             Binder binder,
-            TraceWriter log)
+            ILogger log)
         {
             log.LogInformation($"C# Queue trigger function processed: {inputChunk}");
 
@@ -86,7 +86,7 @@ namespace NwNsgProject
 
         }
 
-        public static Chunk GetNewChunk(Chunk thisChunk, int index, TraceWriter log, long start = 0)
+        public static Chunk GetNewChunk(Chunk thisChunk, int index, ILogger log, long start = 0)
         {
             var chunk = new Chunk
             {
@@ -130,7 +130,7 @@ namespace NwNsgProject
             return endingByte - startingByte;
         }
 
-        public static int FindNextRecordRecurse(string nsgMessages, int startingByte, int braceCounter, TraceWriter log)
+        public static int FindNextRecordRecurse(string nsgMessages, int startingByte, int braceCounter, ILogger log)
         {
             if (startingByte == nsgMessages.Length)
             {
