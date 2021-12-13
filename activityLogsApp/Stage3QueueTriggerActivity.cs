@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Extensions;
 using Microsoft.Azure.Storage.Blob;
+using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using Newtonsoft.Json;
 using System.Net;
@@ -23,12 +24,12 @@ namespace NwNsgProject
             Binder binder,
             TraceWriter log)
         {
-            //log.Info($"C# Queue trigger function processed: {inputChunk}");
+            //log.LogInformation($"C# Queue trigger function processed: {inputChunk}");
 
             string nsgSourceDataAccount = Util.GetEnvironmentVariable("nsgSourceDataAccount");
             if (nsgSourceDataAccount.Length == 0)
             {
-                log.Error("Value for nsgSourceDataAccount is required.");
+                log.LogError("Value for nsgSourceDataAccount is required.");
                 throw new ArgumentNullException("nsgSourceDataAccount", "Please supply in this setting the name of the connection string from which NSG logs should be read.");
             }
 
@@ -48,7 +49,7 @@ namespace NwNsgProject
             }
             catch (Exception ex)
             {
-                log.Error(string.Format("Error binding blob input: {0}", ex.Message));
+                log.LogError(string.Format("Error binding blob input: {0}", ex.Message));
                 throw ex;
             }
 
@@ -76,7 +77,7 @@ namespace NwNsgProject
 
             if (avidAddress.Length == 0)
             {
-                log.Error("Values for splunkAddress and splunkToken are required.");
+                log.LogError("Values for splunkAddress and splunkToken are required.");
                 return;
             }
             string customerid = Util.GetEnvironmentVariable("customerId");
