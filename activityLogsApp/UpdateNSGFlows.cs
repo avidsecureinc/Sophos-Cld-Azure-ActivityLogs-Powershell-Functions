@@ -341,6 +341,7 @@ namespace NwNsgProject
         	string local = Util.GetEnvironmentVariable("local");
         	string storageAccountConnecion = Util.GetEnvironmentVariable("storageAccountConnecion");
         	string avidAddress = Util.GetEnvironmentVariable("avidFlowAddress");
+        	string storageSku = Util.GetEnvironmentVariable("storageSku");
 
         	var subscription_tag = subs_id.Replace("-","").Substring(0,8) + customerid.Replace("-","").Substring(0,8);
         	string appNameStage1 = local + "AvidFlowLogs" + subscription_tag  + location_code;
@@ -349,6 +350,9 @@ namespace NwNsgProject
         	string storage_json_string = @"{""sku"": {""name"": ""Standard_GRS""}, ""kind"": ""StorageV2"", ""location"": ""eastus""}";
         	var storage_json = JsonConvert.DeserializeObject<StorageAccountPutObj>(storage_json_string);
         	storage_json.location = location;
+        	if(!string.IsNullOrEmpty(storageSku)){
+        		storage_json.sku.name = storageSku;
+        	}
         	string filled_url = String.Format(create_storage_account_url, subs_id, resourceGroup, storage_account_name);
         	try{
 
