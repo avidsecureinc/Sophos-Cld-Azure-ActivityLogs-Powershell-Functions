@@ -432,7 +432,7 @@ namespace NwNsgProject
 		    deployment_json.properties.parameters.storageAccountConnecion.value = storageAccountConnecion;
 		    deployment_json.properties.parameters.avidAddress.value = avidAddress;
 			deployment_json.properties.parameters.branch.value = branch;
-			deployment_json.properties.parameters.hostId.value = "hostId";
+			deployment_json.properties.parameters.hostId.value = Guid.NewGuid().ToString().Replace("-","");
 
 		    string filled_url = String.Format(create_deployment_url, subs_id, resourceGroup, appNameStage1);
 
