@@ -14,9 +14,10 @@ namespace NwNsgProject
     public static class HttpTriggerFunction
     {
 		[FunctionName("HttpTriggerFunction")]
-		public static async Task Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
+		public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
 		{
     		log.LogInformation("HTTP trigger function processed a request.");
+    		return (ActionResult)new OkObjectResult("Success");
 		}
 	}
 }
