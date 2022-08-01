@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net;
 using System.Collections.Generic;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
