@@ -21,7 +21,7 @@ namespace NwNsgProject
             StartingByteOffset = offset;
         }
 
-        public static Checkpoint GetCheckpoint(BlobDetails blobDetails, CloudTable checkpointTable)
+        public static Checkpoint GetCheckpoint(BlobDetails blobDetails, TableClient checkpointTable)
         {
             TableOperation operation = TableOperation.Retrieve<Checkpoint>(
                 blobDetails.GetPartitionKey(), blobDetails.GetRowKey());
@@ -36,7 +36,7 @@ namespace NwNsgProject
             return checkpoint;
         }
 
-        public static Checkpoint GetCheckpointActivity(BlobDetailsActivity blobDetails, CloudTable checkpointTable)
+        public static Checkpoint GetCheckpointActivity(BlobDetailsActivity blobDetails, TableClient checkpointTable)
         {
             TableOperation operation = TableOperation.Retrieve<Checkpoint>(
                 blobDetails.GetPartitionKey(), blobDetails.GetRowKey());
@@ -51,7 +51,7 @@ namespace NwNsgProject
             return checkpoint;
         }
 
-        public void PutCheckpoint(CloudTable checkpointTable, string lastBlockName, long startingByteOffset)
+        public void PutCheckpoint(TableClient checkpointTable, string lastBlockName, long startingByteOffset)
         {
             LastBlockName = lastBlockName;
             StartingByteOffset = startingByteOffset;
@@ -60,7 +60,7 @@ namespace NwNsgProject
             checkpointTable.Execute(operation);
         }
 
-        public void PutCheckpointActivity(CloudTable checkpointTable, long startingByteOffset)
+        public void PutCheckpointActivity(TableClient checkpointTable, long startingByteOffset)
         {
             StartingByteOffset = startingByteOffset;
 
