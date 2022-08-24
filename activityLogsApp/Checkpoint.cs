@@ -1,5 +1,5 @@
 ﻿using System;
-using Azure.Data.Tables;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace NwNsgProject
 {

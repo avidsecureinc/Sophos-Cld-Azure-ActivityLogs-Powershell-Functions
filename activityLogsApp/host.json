@@ -1,17 +1,1 @@
-{
-    "version": "2.0",
-    "functions":
-    [
-        "UpdateNSGFlows",
-        "Stage1BlobTriggerActivity",
-        "Stage2QueueTriggerActivity",
-        "Stage3QueueTriggerActivity"
-    ],
-    "extensions":
-    {
-        "blobs":
-        {
-            "maxDegreeOfParallelism": 8
-        }
-    }
-}
+{"functions": ["UpdateNSGFlows","Stage1BlobTriggerActivity", "Stage2QueueTriggerActivity", "Stage3QueueTriggerActivity"]}
