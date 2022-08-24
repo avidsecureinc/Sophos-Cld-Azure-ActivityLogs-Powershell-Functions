@@ -3,7 +3,7 @@ using Azure.Data.Tables;
 
 namespace NwNsgProject
 {
-    public class Checkpoint : ITableEntity
+    public class Checkpoint
     {
 
         public string LastBlockName { get; set; }
