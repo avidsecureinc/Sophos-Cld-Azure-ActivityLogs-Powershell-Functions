@@ -24,9 +24,9 @@ namespace NwNsgProject
 
         public static Checkpoint GetCheckpoint(BlobDetails blobDetails, TableClient checkpointTable)
         {
-            TableOperation operation = TableOperation.Retrieve<Checkpoint>(
+            TableEntity.TableOperation operation = TableEntity.TableOperation.Retrieve<Checkpoint>(
                 blobDetails.GetPartitionKey(), blobDetails.GetRowKey());
-            TableResult result = checkpointTable.Execute(operation);
+            TableEntity.TableResult result = checkpointTable.Query(operation);
 
             Checkpoint checkpoint = (Checkpoint)result.Result;
             if (checkpoint == null)
