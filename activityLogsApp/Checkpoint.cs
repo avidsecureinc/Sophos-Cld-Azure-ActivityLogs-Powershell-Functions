@@ -8,6 +8,7 @@ namespace NwNsgProject
 
         public string LastBlockName { get; set; }
         public long StartingByteOffset { get; set; }
+        public TableEntity TableEntity { get; set; }
 
         public Checkpoint()
         {
@@ -15,8 +16,8 @@ namespace NwNsgProject
 
         public Checkpoint(string partitionKey, string rowKey, string blockName, long offset)
         {
-            PartitionKey = partitionKey;
-            RowKey = rowKey;
+            TableEntity.PartitionKey = partitionKey;
+            TableEntity.RowKey = rowKey;
             LastBlockName = blockName;
             StartingByteOffset = offset;
         }
