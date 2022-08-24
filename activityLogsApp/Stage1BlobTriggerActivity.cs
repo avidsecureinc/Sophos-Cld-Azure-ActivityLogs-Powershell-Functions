@@ -1,7 +1,7 @@
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Azure.WebJobs.Extensions.Storage.Blobs;
-using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Azure.WebJobs.Extensions.Tables;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;

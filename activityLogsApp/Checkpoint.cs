@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Azure.WebJobs.Extensions.Tables;
 
 namespace NwNsgProject
 {
