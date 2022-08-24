@@ -1,6 +1,6 @@
 using System.IO;
 using System.Collections.Generic;
-using Microsoft.Azure.Storage.Blob;
+using Microsoft.Azure.WebJobs.Extensions.Storage.Blobs;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
