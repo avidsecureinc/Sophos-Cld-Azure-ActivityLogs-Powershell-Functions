@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Azure.WebJobs.Extensions.Tables;
+using Azure.Data.Tables;
 
 namespace NwNsgProject
 {
