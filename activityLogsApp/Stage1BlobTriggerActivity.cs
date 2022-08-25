@@ -1,7 +1,8 @@
 using System.IO;
 using System.Collections.Generic;
-using Microsoft.Azure.Storage.Blob;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Data.Tables;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -15,9 +16,9 @@ namespace NwNsgProject
 
         [FunctionName("Stage1BlobTriggerActivity")]
         public static async Task Run(
-            [BlobTrigger("%blobContainerNameActivity%/resourceId=/SUBSCRIPTIONS/{subId}/y={blobYear}/m={blobMonth}/d={blobDay}/h={blobHour}/m={blobMinute}/PT1H.json", Connection = "nsgSourceDataConnection")]CloudAppendBlob myBlobActivity,
+            [BlobTrigger("%blobContainerNameActivity%/resourceId=/SUBSCRIPTIONS/{subId}/y={blobYear}/m={blobMonth}/d={blobDay}/h={blobHour}/m={blobMinute}/PT1H.json", Connection = "nsgSourceDataConnection")]BlockBlobClient myBlobActivity,
             [Queue("activitystage1", Connection = "AzureWebJobsStorage")] ICollector<Chunk> outputChunksActivity,
-            [Table("activitycheckpoints", Connection = "AzureWebJobsStorage")] CloudTable checkpointTableActivity,
+            [Table("activitycheckpoints", Connection = "AzureWebJobsStorage")] TableClient checkpointTableActivity,
             string subId, string blobYear, string blobMonth, string blobDay, string blobHour, string blobMinute,
             ILogger log)
         {
