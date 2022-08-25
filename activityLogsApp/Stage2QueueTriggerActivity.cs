@@ -2,7 +2,7 @@ using System;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
-using Microsoft.Azure.WebJobs.Extensions.Storage.Blobs;
+using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
