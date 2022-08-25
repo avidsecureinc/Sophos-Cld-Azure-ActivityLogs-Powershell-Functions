@@ -1,5 +1,6 @@
 ﻿using System;
 using Azure.Data.Tables;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace NwNsgProject
 {
@@ -24,9 +25,9 @@ namespace NwNsgProject
 
         public static Checkpoint GetCheckpoint(BlobDetails blobDetails, TableClient checkpointTable)
         {
-            TableEntity.TableOperation operation = TableEntity.TableOperation.Retrieve<Checkpoint>(
+            TableOperation operation = TableOperation.Retrieve<Checkpoint>(
                 blobDetails.GetPartitionKey(), blobDetails.GetRowKey());
-            TableEntity.TableResult result = checkpointTable.Query(operation);
+            TableResult result = checkpointTable.Query(operation);
 
             Checkpoint checkpoint = (Checkpoint)result.Result;
             if (checkpoint == null)
