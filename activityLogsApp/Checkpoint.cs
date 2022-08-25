@@ -4,12 +4,11 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace NwNsgProject
 {
-    public class Checkpoint
+    public class Checkpoint : TableEntity
     {
 
         public string LastBlockName { get; set; }
         public long StartingByteOffset { get; set; }
-        public TableEntity TableEntity { get; set; }
 
         public Checkpoint()
         {
@@ -17,8 +16,8 @@ namespace NwNsgProject
 
         public Checkpoint(string partitionKey, string rowKey, string blockName, long offset)
         {
-            TableEntity.PartitionKey = partitionKey;
-            TableEntity.RowKey = rowKey;
+            PartitionKey = partitionKey;
+            RowKey = rowKey;
             LastBlockName = blockName;
             StartingByteOffset = offset;
         }
