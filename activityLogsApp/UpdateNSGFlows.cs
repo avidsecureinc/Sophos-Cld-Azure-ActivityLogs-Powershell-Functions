@@ -116,7 +116,8 @@ namespace NwNsgProject
 						{
 						    string data =  await response.Content.ReadAsStringAsync();
 						    var result = JsonConvert.DeserializeObject<NSGApiResult>(data);
-						   	await enable_flow_logs(result, nwList, token, subs_id, log);
+						    string[] networkWatcherRegions = Environment.GetEnvironmentVariable("networkWatcherRegions").Split(',');
+						   	await enable_flow_logs(result, nwList, token, subs_id, log,networkWatcherRegions);
 						}
 		            } 
 		            catch (System.Net.Http.HttpRequestException e)
@@ -163,15 +164,16 @@ namespace NwNsgProject
 
         }
 
-        static async Task enable_flow_logs(NSGApiResult nsgresult, Dictionary<string, string> nwList, String token, String subs_id, ILogger log)
+        static async Task enable_flow_logs(NSGApiResult nsgresult, Dictionary<string, string> nwList, String token, String subs_id, ILogger log,string[] networkWatcherRegions)
         {
         	
         	Dictionary<string, string> storageloc = new Dictionary<string, string>(); 
         	string[] all_locations = new string[]{"eastasia","southeastasia","centralus","eastus","eastus2","westus","northcentralus","southcentralus","northeurope","westeurope","japanwest","japaneast","brazilsouth","australiaeast","australiasoutheast","southindia","centralindia","westindia","canadacentral","canadaeast","uksouth","ukwest","westcentralus","westus2","koreacentral","koreasouth","francecentral","uaenorth","switzerlandnorth","norwaywest","germanywestcentral","swedencentral","jioindiawest","westus3","norwayeast","southafricanorth","australiacentral2","australiacentral","francesouth"};
         	List<string> list_locations = new List<string>(all_locations);
         	foreach (var nsg in nsgresult.value) {
-
-        		if(list_locations.Contains(nsg.location)){
+                //networkWatcherRegions is empty or null then process as it is
+                //else check if nsg.location contains netwrok watcher region then only process**
+        		if(list_locations.Contains(nsg.location) && ){
 			   		string loc_nw = nwList[nsg.location];
 			   		string storageId = "";
 			   		if(storageloc.ContainsKey(nsg.location)){
