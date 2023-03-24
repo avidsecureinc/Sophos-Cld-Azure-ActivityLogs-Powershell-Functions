@@ -172,19 +172,22 @@ namespace NwNsgProject
         	foreach (var nsg in nsgresult.value) {
 
         		if(list_locations.Contains(nsg.location)){
-			   		string loc_nw = nwList[nsg.location];
-			   		string storageId = "";
-			   		if(storageloc.ContainsKey(nsg.location)){
-			   			storageId = storageloc[nsg.location];
-			   		}else{
-			   			storageId = await check_avid_storage_account(token,subs_id,nsg.location,log);
-			   			storageloc.Add(nsg.location, storageId);
-			   		}
-			   		if(storageId.Equals("null")){
-			   			break;
-		   			}
-		   			await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
-		   			
+                    try {
+                            string loc_nw = nwList[nsg.location];
+                            string storageId = "";
+                            if(storageloc.ContainsKey(nsg.location)){
+                                storageId = storageloc[nsg.location];
+                            }else{
+                                storageId = await check_avid_storage_account(token,subs_id,nsg.location,log);
+                                storageloc.Add(nsg.location, storageId);
+                            }
+                            if(storageId.Equals("null")){
+                                break;
+                            }
+                            await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
+                        } catch (System.Net.Http.HttpRequestException e) {
+                            log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
+                        }
 		   		}
 		   	}
 
