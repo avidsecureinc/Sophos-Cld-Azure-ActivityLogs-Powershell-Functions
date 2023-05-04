@@ -356,10 +356,15 @@ class StorageAccountPutObj{
     public StorageSKU sku {get; set;}
     public string location {get; set;}
     public string kind {get; set;}
+    public StorageAccountPutObjProperties properties {get; set;}
 }
 
 class StorageSKU{
     public String name {get; set;}
+}
+
+class StorageAccountPutObjProperties{
+    public String allowBlobPublicAccess {get; set;}
 }
 
 class StorageAccountKeyList{
