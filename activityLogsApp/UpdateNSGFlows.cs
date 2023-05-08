@@ -116,7 +116,10 @@ namespace NwNsgProject
 						{
 						    string data =  await response.Content.ReadAsStringAsync();
 						    var result = JsonConvert.DeserializeObject<NSGApiResult>(data);
-						    string[] networkWatcherRegions = Environment.GetEnvironmentVariable("networkWatcherRegions").Split(',');
+						    string[] networkWatcherRegions;
+						    if(Environment.GetEnvironmentVariable("networkWatcherRegions") != null){
+						        networkWatcherRegions = Environment.GetEnvironmentVariable("networkWatcherRegions").Split(',');
+						    }
 						    List<string> list_networkWatcherRegions = new List<string>(networkWatcherRegions);
 						   	await enable_flow_logs(result, nwList, token, subs_id, log,list_networkWatcherRegions);
 						}
