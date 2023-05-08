@@ -116,11 +116,10 @@ namespace NwNsgProject
 						{
 						    string data =  await response.Content.ReadAsStringAsync();
 						    var result = JsonConvert.DeserializeObject<NSGApiResult>(data);
-						    string[] networkWatcherRegions = new string[100];
-						    if(Environment.GetEnvironmentVariable("nwRegions") != null){
-						        networkWatcherRegions = Environment.GetEnvironmentVariable("nwRegions").Split(',');
+						    List<string> list_networkWatcherRegions = null;
+						    if(Environment.GetEnvironmentVariable("nwRegions") != null && !Environment.GetEnvironmentVariable("nwRegions").isEmpty()){
+						        list_networkWatcherRegions = Environment.GetEnvironmentVariable("nwRegions").Split(',').ToList();
 						    }
-						    List<string> list_networkWatcherRegions = new List<string>(networkWatcherRegions);
 						   	await enable_flow_logs(result, nwList, token, subs_id, log,list_networkWatcherRegions);
 						}
 		            } 
