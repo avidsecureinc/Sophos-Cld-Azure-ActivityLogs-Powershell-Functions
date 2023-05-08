@@ -172,25 +172,28 @@ namespace NwNsgProject
         {
         	
         	Dictionary<string, string> storageloc = new Dictionary<string, string>(); 
-        	string[] all_locations = new string[]{"eastasia","southeastasia","centralus","eastus","eastus2","westus","northcentralus","southcentralus","northeurope","westeurope","japanwest","japaneast","brazilsouth","australiaeast","australiasoutheast","southindia","centralindia","westindia","canadacentral","canadaeast","uksouth","ukwest","westcentralus","westus2","koreacentral","koreasouth","francecentral","uaenorth","switzerlandnorth","norwaywest","germanywestcentral","swedencentral","jioindiawest","westus3","norwayeast","southafricanorth","australiacentral2","australiacentral","francesouth"};
+        	string[] all_locations = new string[]{"eastasia","southeastasia","centralus","eastus","eastus2","westus","northcentralus","southcentralus","northeurope","westeurope","japanwest","japaneast","brazilsouth","australiaeast","australiasoutheast","southindia","centralindia","westindia","canadacentral","canadaeast","uksouth","ukwest","westcentralus","westus2","koreacentral","koreasouth","francecentral","uaenorth","switzerlandnorth","norwaywest","germanywestcentral","swedencentral","jioindiawest","westus3","norwayeast","southafricanorth","australiacentral2","australiacentral","francesouth","qatarcentral"};
         	List<string> list_locations = new List<string>(all_locations);
         	foreach (var nsg in nsgresult.value) {
         		if( (networkWatcherRegions == null || !networkWatcherRegions.Any()) || networkWatcherRegions.Contains(nsg.location)){
-                    if(list_locations.Contains(nsg.location)){
-                        string loc_nw = nwList[nsg.location];
-                        string storageId = "";
-                        if(storageloc.ContainsKey(nsg.location)){
-                            storageId = storageloc[nsg.location];
-                        }else{
-                            storageId = await check_avid_storage_account(token,subs_id,nsg.location,log);
-                            storageloc.Add(nsg.location, storageId);
-                        }
-                        if(storageId.Equals("null")){
-                            break;
-                        }
-                        await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
-                        }
-		   		}
+                   	if(list_locations.Contains(nsg.location)){
+                       try {
+                               string loc_nw = nwList[nsg.location];
+                               string storageId = "";
+                               if(storageloc.ContainsKey(nsg.location)){
+                                   storageId = storageloc[nsg.location];
+                               }else{
+                                   storageId = await check_avid_storage_account(token,subs_id,nsg.location,log);
+                                   storageloc.Add(nsg.location, storageId);
+                               }
+                               if(storageId.Equals("null")){
+                                   break;
+                               }
+                               await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
+                           } catch (System.Net.Http.HttpRequestException e) {
+                               log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
+                           }
+                }
 		   	}
 
 		   	Dictionary<string, string> allnsgloc = new Dictionary<string, string>(); 
@@ -278,7 +281,7 @@ namespace NwNsgProject
         	string resourceGroup = Util.GetEnvironmentVariable("avidResourceGroup");
         	string local = Util.GetEnvironmentVariable("local");
 
-        	var location_codes_string = @"{""uaenorth"":""uan1"",""switzerlandnorth"":""swn1"",""norwaywest"":""nrw1"",""germanywestcentral"":""gwc1"",""eastasia"":""eea1"",""southeastasia"":""sea1"",""centralus"":""ccu1"",""eastus"":""eeu1"",""eastus2"":""eeu2"",""westus"":""wwu1"",""northcentralus"":""ncu1"",""southcentralus"":""scu1"",""northeurope"":""nne1"",""westeurope"":""wwe1"",""japanwest"":""wwj1"",""japaneast"":""eej1"",""brazilsouth"":""ssb1"",""australiaeast"":""eau1"",""australiasoutheast"":""sau1"",""southindia"":""ssi1"",""centralindia"":""cci1"",""westindia"":""wwi1"",""canadacentral"":""ccc1"",""canadaeast"":""eec1"",""uksouth"":""suk1"",""ukwest"":""wuk1"",""westcentralus"":""wcu1"",""westus2"":""wwu2"",""koreacentral"":""cck1"",""koreasouth"":""ssk1"",""francecentral"":""ccf1"",""francesouth"":""ssf1"",""australiacentral"":""cau1"",""australiacentral2"":""cau2"",""westus3"":""wwu3"",""southafricanorth"":""nsa1"",""norwayeast"":""enr1"",""swedencentral"":""csn1"",""jioindiawest"":""wwi2""}";
+        	var location_codes_string = @"{""uaenorth"":""uan1"",""switzerlandnorth"":""swn1"",""norwaywest"":""nrw1"",""germanywestcentral"":""gwc1"",""eastasia"":""eea1"",""southeastasia"":""sea1"",""centralus"":""ccu1"",""eastus"":""eeu1"",""eastus2"":""eeu2"",""westus"":""wwu1"",""northcentralus"":""ncu1"",""southcentralus"":""scu1"",""northeurope"":""nne1"",""westeurope"":""wwe1"",""japanwest"":""wwj1"",""japaneast"":""eej1"",""brazilsouth"":""ssb1"",""australiaeast"":""eau1"",""australiasoutheast"":""sau1"",""southindia"":""ssi1"",""centralindia"":""cci1"",""westindia"":""wwi1"",""canadacentral"":""ccc1"",""canadaeast"":""eec1"",""uksouth"":""suk1"",""ukwest"":""wuk1"",""westcentralus"":""wcu1"",""westus2"":""wwu2"",""koreacentral"":""cck1"",""koreasouth"":""ssk1"",""francecentral"":""ccf1"",""francesouth"":""ssf1"",""australiacentral"":""cau1"",""australiacentral2"":""cau2"",""westus3"":""wwu3"",""southafricanorth"":""nsa1"",""norwayeast"":""enr1"",""swedencentral"":""csn1"",""jioindiawest"":""wwi2"",""qatarcentral"":""cqr1""}";
 
         	var location_codes = JsonConvert.DeserializeObject<Dictionary<string, string>>(location_codes_string);
 
@@ -358,7 +361,7 @@ namespace NwNsgProject
         	string appNameStage1 = local + "AvidFlowLogs" + subscription_tag  + location_code;
         	string storage_account_name_activity = local + "avidact" + subscription_tag;
         	
-        	string storage_json_string = @"{""sku"": {""name"": ""Standard_GRS""}, ""kind"": ""StorageV2"", ""location"": ""eastus""}";
+        	string storage_json_string = @"{""sku"": {""name"": ""Standard_GRS""}, ""kind"": ""StorageV2"", ""location"": ""eastus"", ""properties"": {""allowBlobPublicAccess"": false}}";
         	var storage_json = JsonConvert.DeserializeObject<StorageAccountPutObj>(storage_json_string);
         	storage_json.location = location;
         	if(!string.IsNullOrEmpty(storageSku)){
@@ -534,7 +537,7 @@ namespace NwNsgProject
         	string resourceGroup = Util.GetEnvironmentVariable("avidResourceGroup");
         	string local = Util.GetEnvironmentVariable("local");
 
-        	var location_codes_string = @"{""uaenorth"":""uan1"",""switzerlandnorth"":""swn1"",""norwaywest"":""nrw1"",""germanywestcentral"":""gwc1"",""eastasia"":""eea1"",""southeastasia"":""sea1"",""centralus"":""ccu1"",""eastus"":""eeu1"",""eastus2"":""eeu2"",""westus"":""wwu1"",""northcentralus"":""ncu1"",""southcentralus"":""scu1"",""northeurope"":""nne1"",""westeurope"":""wwe1"",""japanwest"":""wwj1"",""japaneast"":""eej1"",""brazilsouth"":""ssb1"",""australiaeast"":""eau1"",""australiasoutheast"":""sau1"",""southindia"":""ssi1"",""centralindia"":""cci1"",""westindia"":""wwi1"",""canadacentral"":""ccc1"",""canadaeast"":""eec1"",""uksouth"":""suk1"",""ukwest"":""wuk1"",""westcentralus"":""wcu1"",""westus2"":""wwu2"",""koreacentral"":""cck1"",""koreasouth"":""ssk1"",""francecentral"":""ccf1"",""francesouth"":""ssf1"",""australiacentral"":""cau1"",""australiacentral2"":""cau2"",""westus3"":""wwu3"",""southafricanorth"":""nsa1"",""norwayeast"":""enr1"",""swedencentral"":""csn1"",""jioindiawest"":""wwi2""}";
+        	var location_codes_string = @"{""uaenorth"":""uan1"",""switzerlandnorth"":""swn1"",""norwaywest"":""nrw1"",""germanywestcentral"":""gwc1"",""eastasia"":""eea1"",""southeastasia"":""sea1"",""centralus"":""ccu1"",""eastus"":""eeu1"",""eastus2"":""eeu2"",""westus"":""wwu1"",""northcentralus"":""ncu1"",""southcentralus"":""scu1"",""northeurope"":""nne1"",""westeurope"":""wwe1"",""japanwest"":""wwj1"",""japaneast"":""eej1"",""brazilsouth"":""ssb1"",""australiaeast"":""eau1"",""australiasoutheast"":""sau1"",""southindia"":""ssi1"",""centralindia"":""cci1"",""westindia"":""wwi1"",""canadacentral"":""ccc1"",""canadaeast"":""eec1"",""uksouth"":""suk1"",""ukwest"":""wuk1"",""westcentralus"":""wcu1"",""westus2"":""wwu2"",""koreacentral"":""cck1"",""koreasouth"":""ssk1"",""francecentral"":""ccf1"",""francesouth"":""ssf1"",""australiacentral"":""cau1"",""australiacentral2"":""cau2"",""westus3"":""wwu3"",""southafricanorth"":""nsa1"",""norwayeast"":""enr1"",""swedencentral"":""csn1"",""jioindiawest"":""wwi2"",""qatarcentral"":""cqr1""}";
 
         	var location_codes = JsonConvert.DeserializeObject<Dictionary<string, string>>(location_codes_string);
 
