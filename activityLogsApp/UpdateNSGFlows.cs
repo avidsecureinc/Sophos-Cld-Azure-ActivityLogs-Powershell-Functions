@@ -185,12 +185,12 @@ namespace NwNsgProject
         	log.LogInformation("network watcher Regions list from enable_flow_logs : ");
             for(int i=0;i<networkWatcherRegions.Count;i++)
             {
-            log.LogInformation(networkWatcherRegions[i]);
+                log.LogInformation(networkWatcherRegions[i]);
             }
             log.LogInformation("--------------------------------------------------");
             log.LogInformation("NSG list from enable_flow_logs : ");
-             for(var nsg in nsgresult.value) {
-             log.LogInformation(nsg.location);
+             foreach(var nsg in nsgresult.value) {
+                log.LogInformation(nsg.location);
              }
              log.LogInformation("--------------------------------------------------");
         	foreach (var nsg in nsgresult.value) {
