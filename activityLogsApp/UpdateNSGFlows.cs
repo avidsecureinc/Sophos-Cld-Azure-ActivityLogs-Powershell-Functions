@@ -118,7 +118,6 @@ namespace NwNsgProject
 						    var result = JsonConvert.DeserializeObject<NSGApiResult>(data);
 
                             string[] networkWatcherRegions = new string[0];
-                            log.LogInformation(String.Format("nwRegions list from environment variable : {0} ",Environment.GetEnvironmentVariable("nwRegions")));
                             if( !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("nwRegions"))){
                                 networkWatcherRegions = Environment.GetEnvironmentVariable("nwRegions").Split(',');
                             }
@@ -194,7 +193,7 @@ namespace NwNsgProject
              }
              log.LogInformation("--------------------------------------------------");
         	foreach (var nsg in nsgresult.value) {
-        		if(( networkWatcherRegions == null || list_networkWatcherRegions.Count == 0) || networkWatcherRegions.Contains(nsg.location) ){
+        		if(( networkWatcherRegions == null || networkWatcherRegions.Count == 0) || networkWatcherRegions.Contains(nsg.location) ){
                    	if(list_locations.Contains(nsg.location)){
                        try {
                        log.LogInformation(String.Format("check and create storage account for location  : {0}",nsg.location));
