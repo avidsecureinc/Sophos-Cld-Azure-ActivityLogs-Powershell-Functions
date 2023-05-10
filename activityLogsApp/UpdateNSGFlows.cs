@@ -209,8 +209,6 @@ namespace NwNsgProject
                                if(storageId.Equals("null")){
                                    break;
                                }
-                                 log.LogInformation(String.Format("storageId :{0} for location  : {1}",storageId,nsg.location));
-
                                await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
                            } catch (System.Net.Http.HttpRequestException e) {
                                log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
