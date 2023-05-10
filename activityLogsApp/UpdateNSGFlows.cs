@@ -192,6 +192,7 @@ namespace NwNsgProject
                            } catch (System.Net.Http.HttpRequestException e) {
                                log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
                            }
+                    }
                 }
 		   	}
 
