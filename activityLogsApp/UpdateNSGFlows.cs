@@ -211,8 +211,9 @@ namespace NwNsgProject
                                }
 
                                await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
-                           } catch (System.Net.Http.HttpRequestException e) {
+                           } catch (Exception e) {
                                log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
+                               log.LogError(e);
                            }
                     }
                 }
