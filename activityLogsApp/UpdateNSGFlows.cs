@@ -206,10 +206,10 @@ namespace NwNsgProject
                                    storageId = await check_avid_storage_account(token,subs_id,nsg.location,log);
                                    storageloc.Add(nsg.location, storageId);
                                }
+                               log.LogInformation(String.Format("storageId :{0} for location  : {1}",storageId,nsg.location));
                                if(storageId.Equals("null")){
                                    break;
                                }
-                                 log.LogInformation(String.Format("storageId :{0} for location  : {1}",storageId,nsg.location));
 
                                await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
                            } catch (System.Net.Http.HttpRequestException e) {
