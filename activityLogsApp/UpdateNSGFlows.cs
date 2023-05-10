@@ -174,6 +174,24 @@ namespace NwNsgProject
             }
 
         }
+        public string GetAllFootprints(Exception x)
+        {
+                var st = new StackTrace(x, true);
+                var frames = st.GetFrames();
+                var traceString = new StringBuilder();
+
+                foreach (var frame in frames)
+                {
+                    if (frame.GetFileLineNumber() < 1)
+                        continue;
+
+                    traceString.Append("File: " + frame.GetFileName());
+                    traceString.Append(", Method:" + frame.GetMethod().Name);
+                    traceString.Append(", LineNumber: " + frame.GetFileLineNumber());
+                    traceString.Append("  -->  ");
+                }
+                return traceString.ToString();
+        }
 
         static async Task enable_flow_logs(NSGApiResult nsgresult, Dictionary<string, string> nwList, String token, String subs_id, ILogger log,List<string> networkWatcherRegions)
         {
@@ -213,7 +231,7 @@ namespace NwNsgProject
                                await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
                            } catch (Exception e) {
                                log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
-                               log.LogError(e.Message);
+                               log.LogError(GetAllFootprints(e));
                            }
                     }
                 }
