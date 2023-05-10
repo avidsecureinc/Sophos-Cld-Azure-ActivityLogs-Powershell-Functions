@@ -189,7 +189,7 @@ namespace NwNsgProject
             }
             log.LogInformation("--------------------------------------------------");
             log.LogInformation("NSG list from enable_flow_logs : ");
-             foreach(var nsg in nsgresult.value) {
+             foreach (var nsg in nsgresult.value) {
                 log.LogInformation(nsg.location);
              }
              log.LogInformation("--------------------------------------------------");
