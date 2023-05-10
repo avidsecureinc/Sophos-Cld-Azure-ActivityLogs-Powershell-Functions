@@ -118,17 +118,10 @@ namespace NwNsgProject
 						    var result = JsonConvert.DeserializeObject<NSGApiResult>(data);
 
                             string[] networkWatcherRegions = new string[0];
-                            log.LogInformation(String.Format("nwRegions list from environment variable : {0} ",Environment.GetEnvironmentVariable("nwRegions")));
                             if( !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("nwRegions"))){
                                 networkWatcherRegions = Environment.GetEnvironmentVariable("nwRegions").Split(',');
                             }
                             List<string> list_networkWatcherRegions = new List<string>(networkWatcherRegions);
-                            log.LogInformation("list_networkWatcherRegions from above method : ");
-                            for(int i=0;i<list_networkWatcherRegions.Count;i++)
-                            {
-                            log.LogInformation(list_networkWatcherRegions[i]);
-                            }
-                            log.LogInformation("--------------------------------------------------");
 						   	await enable_flow_logs(result, nwList, token, subs_id, log,list_networkWatcherRegions);
 						}
 		            } 
@@ -182,22 +175,10 @@ namespace NwNsgProject
         	Dictionary<string, string> storageloc = new Dictionary<string, string>(); 
         	string[] all_locations = new string[]{"eastasia","southeastasia","centralus","eastus","eastus2","westus","northcentralus","southcentralus","northeurope","westeurope","japanwest","japaneast","brazilsouth","australiaeast","australiasoutheast","southindia","centralindia","westindia","canadacentral","canadaeast","uksouth","ukwest","westcentralus","westus2","koreacentral","koreasouth","francecentral","uaenorth","switzerlandnorth","norwaywest","germanywestcentral","swedencentral","jioindiawest","westus3","norwayeast","southafricanorth","australiacentral2","australiacentral","francesouth","qatarcentral"};
         	List<string> list_locations = new List<string>(all_locations);
-        	log.LogInformation("network watcher Regions list from enable_flow_logs : ");
-            for(int i=0;i<networkWatcherRegions.Count;i++)
-            {
-            log.LogInformation(networkWatcherRegions[i]);
-            }
-            log.LogInformation("--------------------------------------------------");
-            log.LogInformation("NSG list from enable_flow_logs : ");
-             for(var nsg in nsgresult.value) {
-             log.LogInformation(nsg.location);
-             }
-             log.LogInformation("--------------------------------------------------");
         	foreach (var nsg in nsgresult.value) {
         		if(( networkWatcherRegions == null || networkWatcherRegions.Count == 0) || networkWatcherRegions.Contains(nsg.location) ){
                    	if(list_locations.Contains(nsg.location)){
                        try {
-                       log.LogInformation(String.Format("check and create storage account for location  : {0}",nsg.location));
                                string loc_nw = nwList[nsg.location];
                                string storageId = "";
                                if(storageloc.ContainsKey(nsg.location)){
