@@ -174,7 +174,7 @@ namespace NwNsgProject
             }
 
         }
-        public string GetAllFootprints(Exception x)
+        public static string GetAllFootprints(Exception x)
         {
                 var st = new StackTrace(x, true);
                 var frames = st.GetFrames();
