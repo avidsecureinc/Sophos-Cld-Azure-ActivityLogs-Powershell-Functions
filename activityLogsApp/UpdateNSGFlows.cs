@@ -116,7 +116,13 @@ namespace NwNsgProject
 						{
 						    string data =  await response.Content.ReadAsStringAsync();
 						    var result = JsonConvert.DeserializeObject<NSGApiResult>(data);
-						   	await enable_flow_logs(result, nwList, token, subs_id, log);
+
+                            string[] networkWatcherRegions = new string[0];
+                            if( !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("nwRegions"))){
+                                networkWatcherRegions = Environment.GetEnvironmentVariable("nwRegions").Split(',');
+                            }
+                            List<string> list_networkWatcherRegions = new List<string>(networkWatcherRegions);
+						   	await enable_flow_logs(result, nwList, token, subs_id, log,list_networkWatcherRegions);
 						}
 		            } 
 		            catch (System.Net.Http.HttpRequestException e)
@@ -163,32 +169,33 @@ namespace NwNsgProject
 
         }
 
-        static async Task enable_flow_logs(NSGApiResult nsgresult, Dictionary<string, string> nwList, String token, String subs_id, ILogger log)
+        static async Task enable_flow_logs(NSGApiResult nsgresult, Dictionary<string, string> nwList, String token, String subs_id, ILogger log,List<string> networkWatcherRegions)
         {
         	
         	Dictionary<string, string> storageloc = new Dictionary<string, string>(); 
         	string[] all_locations = new string[]{"eastasia","southeastasia","centralus","eastus","eastus2","westus","northcentralus","southcentralus","northeurope","westeurope","japanwest","japaneast","brazilsouth","australiaeast","australiasoutheast","southindia","centralindia","westindia","canadacentral","canadaeast","uksouth","ukwest","westcentralus","westus2","koreacentral","koreasouth","francecentral","uaenorth","switzerlandnorth","norwaywest","germanywestcentral","swedencentral","jioindiawest","westus3","norwayeast","southafricanorth","australiacentral2","australiacentral","francesouth","qatarcentral"};
         	List<string> list_locations = new List<string>(all_locations);
         	foreach (var nsg in nsgresult.value) {
-
-        		if(list_locations.Contains(nsg.location)){
-                    try {
-                            string loc_nw = nwList[nsg.location];
-                            string storageId = "";
-                            if(storageloc.ContainsKey(nsg.location)){
-                                storageId = storageloc[nsg.location];
-                            }else{
-                                storageId = await check_avid_storage_account(token,subs_id,nsg.location,log);
-                                storageloc.Add(nsg.location, storageId);
-                            }
-                            if(storageId.Equals("null")){
-                                break;
-                            }
-                            await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
-                        } catch (System.Net.Http.HttpRequestException e) {
-                            log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
-                        }
-		   		}
+        		if(( networkWatcherRegions == null || networkWatcherRegions.Count == 0) || networkWatcherRegions.Contains(nsg.location) ){
+                   	if(list_locations.Contains(nsg.location)){
+                       try {
+                               string loc_nw = nwList[nsg.location];
+                               string storageId = "";
+                               if(storageloc.ContainsKey(nsg.location)){
+                                   storageId = storageloc[nsg.location];
+                               }else{
+                                   storageId = await check_avid_storage_account(token,subs_id,nsg.location,log);
+                                   storageloc.Add(nsg.location, storageId);
+                               }
+                               if(storageId.Equals("null")){
+                                   break;
+                               }
+                               await check_and_enable_flow_request(nsg, storageId, loc_nw, subs_id, token, log);
+                           } catch (System.Net.Http.HttpRequestException e) {
+                               log.LogError(e, String.Format("Function UpdateNSGFlows is failed for Region : {0} is failing and subscriptionId : {1}",nsg.location ,subs_id));
+                           }
+                    }
+                }
 		   	}
 
 		   	Dictionary<string, string> allnsgloc = new Dictionary<string, string>(); 
