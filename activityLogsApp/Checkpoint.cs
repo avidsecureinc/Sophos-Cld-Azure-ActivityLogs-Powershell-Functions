@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using System;
 using Azure.Data.Tables;
 using System.Threading.Tasks;
