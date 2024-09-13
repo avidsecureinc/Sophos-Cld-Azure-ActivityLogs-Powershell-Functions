@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Extensions;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using Newtonsoft.Json;
@@ -21,8 +21,7 @@ namespace NwNsgProject
         [FunctionName("Stage3QueueTriggerActivity")]
         public static async Task Run(
             [QueueTrigger("activitystage2", Connection = "AzureWebJobsStorage")]Chunk inputChunk,
-            Binder binder,
-            ILogger log)
+            IBinder binder, ILogger log)
         {
             try
             {
@@ -33,24 +32,13 @@ namespace NwNsgProject
                     throw new ArgumentNullException("nsgSourceDataAccount", "Please supply in this setting the name of the connection string from which NSG logs should be read.");
                 }
 
-                var attributes = new Attribute[]
+                var blobClient = await binder.BindAsync<BlobClient>(new BlobAttribute(inputChunk.BlobName, Connection = nsgSourceDataAccount));
+                HttpRange range = new HttpRange(inputChunk.Start, inputChunk.Length);
+                BlobDownloadStreamingResult response = await blobClient.DownloadStreamingAsync(range);
+                using (var stream = response.Value.Content)
+                using (var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true))
                 {
-                    new BlobAttribute(inputChunk.BlobName),
-                    new StorageAccountAttribute(nsgSourceDataAccount)
-                };
-
-                string nsgMessagesString;
-                try
-                {
-                    byte[] nsgMessages = new byte[inputChunk.Length];
-                    CloudAppendBlob blob = await binder.BindAsync<CloudAppendBlob>(attributes);
-                    await blob.DownloadRangeToByteArrayAsync(nsgMessages, 0, inputChunk.Start, inputChunk.Length);
-                    nsgMessagesString = System.Text.Encoding.UTF8.GetString(nsgMessages);
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(string.Format("Error binding blob input: {0}", ex.Message));
-                    throw ex;
+                    string nsgMessagesString = await reader.ReadToEndAsync();
                 }
 
                 // skip past the leading comma
