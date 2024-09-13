@@ -16,8 +16,7 @@ namespace NwNsgProject
         public static async Task Run(
             [QueueTrigger("activitystage1", Connection = "AzureWebJobsStorage")]Chunk inputChunk,
             [Queue("activitystage2", Connection = "AzureWebJobsStorage")] ICollector<Chunk> outputQueue,
-            Binder binder,
-            ILogger log)
+            IBinder binder, ILogger log)
         {
             try
             {
@@ -36,31 +35,18 @@ namespace NwNsgProject
                     throw new ArgumentNullException("nsgSourceDataAccount", "Please supply in this setting the name of the connection string from which NSG logs should be read.");
                 }
 
-                var attributes = new Attribute[]
+                var blobClient = await binder.BindAsync<BlobClient>(new BlobAttribute(inputChunk.BlobName, Connection = nsgSourceDataAccount));
+                HttpRange range = new HttpRange(inputChunk.Start, inputChunk.Length);
+                BlobDownloadStreamingResult response = await blobClient.DownloadStreamingAsync(range);
+                using (var stream = response.Value.Content)
+                using (var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true))
                 {
-                    new BlobAttribute(inputChunk.BlobName),
-                    new StorageAccountAttribute(nsgSourceDataAccount)
-                };
-
-                byte[] nsgMessages = new byte[inputChunk.Length];
-                try
-                {
-                    CloudAppendBlob blob = await binder.BindAsync<CloudAppendBlob>(attributes);
-                    await blob.DownloadRangeToByteArrayAsync(nsgMessages, 0, inputChunk.Start, inputChunk.Length);
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(string.Format("Error binding blob input: {0}", ex.Message));
-                    throw ex;
+                    var nsgMessagesString = await reader.ReadToEndAsync();
                 }
 
                 int startingByte = 0;
                 var chunkCount = 0;
-
                 var newChunk = GetNewChunk(inputChunk, chunkCount++, log, 0);
-
-                //long length = FindNextRecord(nsgMessages, startingByte);
-                var nsgMessagesString = System.Text.Encoding.Default.GetString(nsgMessages);
                 int endingByte = FindNextRecordRecurse(nsgMessagesString, startingByte, 0, log);
                 int length = endingByte - startingByte + 1;
 
