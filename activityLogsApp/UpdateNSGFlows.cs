@@ -272,7 +272,7 @@ namespace NwNsgProject
             } 
             catch (System.Net.Http.HttpRequestException e)
             {
-                log.LogInformation("Ignore. Failed for some region");
+                log.LogInformation(e, "Ignore. Failed for some region");
             }
             return "false";
         }

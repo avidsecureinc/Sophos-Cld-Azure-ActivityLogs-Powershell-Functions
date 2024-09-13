@@ -1,10 +1,15 @@
+using Azure;
 using System;
+using System.IO;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
+using Microsoft.Azure.WebJobs.Extensions.Storage;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace NwNsgProject
 {
@@ -35,13 +40,22 @@ namespace NwNsgProject
                     throw new ArgumentNullException("nsgSourceDataAccount", "Please supply in this setting the name of the connection string from which NSG logs should be read.");
                 }
 
-                var blobClient = await binder.BindAsync<BlobClient>(new BlobAttribute(inputChunk.BlobName, Connection = nsgSourceDataAccount));
-                HttpRange range = new HttpRange(inputChunk.Start, inputChunk.Length);
-                BlobDownloadStreamingResult response = await blobClient.DownloadStreamingAsync(range);
-                using (var stream = response.Value.Content)
+                var blobClient = await binder.BindAsync<BlobClient>(new BlobAttribute(inputChunk.BlobName)
+                {
+                    Connection = nsgSourceDataAccount
+                });
+
+                var range = new HttpRange(inputChunk.Start, inputChunk.Length);
+                var downloadOptions = new BlobDownloadOptions
+                {
+                    Range = range
+                };
+                BlobDownloadStreamingResult response = await blobClient.DownloadStreamingAsync(downloadOptions);
+                string nsgMessagesString;
+                using (var stream = response.Content)
                 using (var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true))
                 {
-                    var nsgMessagesString = await reader.ReadToEndAsync();
+                    nsgMessagesString = await reader.ReadToEndAsync();
                 }
 
                 int startingByte = 0;
