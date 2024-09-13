@@ -62,7 +62,7 @@ namespace NwNsgProject
             await tableClient.UpsertEntityAsync(this);
         }
 
-        public void PutCheckpointActivity(TableClient checkpointTable, long startingByteOffset)
+        public async void PutCheckpointActivity(TableClient tableClient, long startingByteOffset)
         {
             StartingByteOffset = startingByteOffset;
 

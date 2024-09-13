@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
@@ -20,7 +21,6 @@ namespace NwNsgProject
         public static async Task Run(
             [BlobTrigger("%blobContainerNameActivity%/resourceId=/SUBSCRIPTIONS/{subId}/y={blobYear}/m={blobMonth}/d={blobDay}/h={blobHour}/m={blobMinute}/PT1H.json", Connection = "nsgSourceDataConnection")] AppendBlobClient myBlobActivity,
             [Queue("activitystage1", Connection = "AzureWebJobsStorage")] ICollector<Chunk> outputChunksActivity,
-            [Table("activitycheckpoints", Connection = "AzureWebJobsStorage")] TableClient checkpointTableActivity,
             string subId, string blobYear, string blobMonth, string blobDay, string blobHour, string blobMinute,
             ILogger log)
         {
@@ -43,8 +43,12 @@ namespace NwNsgProject
 
                 var blobDetails = new BlobDetailsActivity(subId, blobYear, blobMonth, blobDay, blobHour, blobMinute);
 
+                string storageConnectionString = Util.GetEnvironmentVariable("AzureWebJobsStorage");
+                // Create a TableClient instance
+                TableClient tableClient = new TableClient(storageConnectionString, "activitycheckpoints");
+
                 // get checkpoint
-                Checkpoint checkpoint = await Checkpoint.GetCheckpointActivity(blobDetails, checkpointTableActivity);
+                Checkpoint checkpoint = await Checkpoint.GetCheckpointActivity(blobDetails, tableClient);
                 // break up the block list into 10k chunks
 
                 var blobProperties = await myBlobActivity.GetPropertiesAsync();
@@ -61,7 +65,7 @@ namespace NwNsgProject
                             BlobAccountConnectionName = nsgSourceDataAccount
                         };
 
-                    checkpoint.PutCheckpointActivity(checkpointTableActivity, blobSize);
+                    checkpoint.PutCheckpointActivity(tableClient, blobSize);
                     outputChunksActivity.Add(newchunk);
                 }
             }
