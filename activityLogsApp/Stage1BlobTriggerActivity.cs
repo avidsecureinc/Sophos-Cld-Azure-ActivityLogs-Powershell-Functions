@@ -46,6 +46,8 @@ namespace NwNsgProject
                 string storageConnectionString = Util.GetEnvironmentVariable("AzureWebJobsStorage");
                 // Create a TableClient instance
                 TableClient tableClient = new TableClient(storageConnectionString, "activitycheckpoints");
+                // Create table if not exist
+                await tableClient.CreateIfNotExistsAsync();
 
                 // get checkpoint
                 Checkpoint checkpoint = await Checkpoint.GetCheckpointActivity(blobDetails, tableClient);
