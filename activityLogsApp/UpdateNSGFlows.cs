@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using Newtonsoft.Json;
@@ -35,7 +35,7 @@ namespace NwNsgProject
 
 			    var subs_ids = Environment.GetEnvironmentVariable("subscriptionIds").Split(',');
 			    string token = null;
-			    
+
 			    UriBuilder builder = new UriBuilder(Environment.GetEnvironmentVariable("MSI_ENDPOINT"));
 				string apiversion = Uri.EscapeDataString("2017-09-01");
 				string resource = Uri.EscapeDataString("https://management.azure.com/");
@@ -46,7 +46,7 @@ namespace NwNsgProject
 	                apiversion = Uri.EscapeDataString("2019-08-01");
 	                builder.Query = "api-version="+apiversion+"&resource="+resource+"&principal_id="+principal_id;
 	            }
-				
+
 				var client = new SingleHttpClientInstance();
 	            try
 	            {
@@ -74,7 +74,7 @@ namespace NwNsgProject
 	            foreach(var subs_id in subs_ids){
 		            ////// get network watchers first
 
-					Dictionary<string, string> nwList = new Dictionary<string, string>(); 
+					Dictionary<string, string> nwList = new Dictionary<string, string>();
 					string list_network_watchers = "https://management.azure.com/subscriptions/{0}/providers/Microsoft.Network/networkWatchers?api-version=2021-06-01";
 					string list_nsgs = "https://management.azure.com/subscriptions/{0}/providers/Microsoft.Network/networkSecurityGroups?api-version=2021-06-01";
 					client = new SingleHttpClientInstance();
@@ -83,17 +83,17 @@ namespace NwNsgProject
 		                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, String.Format(list_network_watchers, subs_id));
 		                req.Headers.Accept.Clear();
 		                req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-		                
+
 		                HttpResponseMessage response = await SingleHttpClientInstance.sendApiRequest(req, token);
 		                if (response.IsSuccessStatusCode)
 						{
 						    string data =  await response.Content.ReadAsStringAsync();
 						    var result = JsonConvert.DeserializeObject<NWApiResult>(data);
-						    
+
 						    foreach (var nw in result.value) {
 						    	nwList.Add(nw.location,nw.id);
 						    }
-						    
+
 						}
 		            }
 		            catch (System.Net.Http.HttpRequestException e)
@@ -124,7 +124,7 @@ namespace NwNsgProject
                             List<string> list_networkWatcherRegions = new List<string>(networkWatcherRegions);
 						   	await enable_flow_logs(result, nwList, token, subs_id, log,list_networkWatcherRegions);
 						}
-		            } 
+		            }
 		            catch (System.Net.Http.HttpRequestException e)
 		            {
 		                throw new System.Net.Http.HttpRequestException("Sending to Splunk. Is Splunk service running?", e);
@@ -135,7 +135,7 @@ namespace NwNsgProject
 		    {
 		        log.LogError(e, "Function UpdateNSGFlows is failed to process request");
 		    }
-			
+
 		}
 
         public class SingleHttpClientInstance
@@ -171,8 +171,8 @@ namespace NwNsgProject
 
         static async Task enable_flow_logs(NSGApiResult nsgresult, Dictionary<string, string> nwList, String token, String subs_id, ILogger log,List<string> networkWatcherRegions)
         {
-        	
-        	Dictionary<string, string> storageloc = new Dictionary<string, string>(); 
+
+        	Dictionary<string, string> storageloc = new Dictionary<string, string>();
         	string[] all_locations = new string[]{"eastasia","southeastasia","centralus","eastus","eastus2","westus","northcentralus","southcentralus","northeurope","westeurope","japanwest","japaneast","brazilsouth","australiaeast","australiasoutheast","southindia","centralindia","westindia","canadacentral","canadaeast","uksouth","ukwest","westcentralus","westus2","koreacentral","koreasouth","francecentral","uaenorth","switzerlandnorth","norwaywest","germanywestcentral","swedencentral","jioindiawest","westus3","norwayeast","southafricanorth","australiacentral2","australiacentral","francesouth","qatarcentral"};
         	List<string> list_locations = new List<string>(all_locations);
         	foreach (var nsg in nsgresult.value) {
@@ -198,7 +198,7 @@ namespace NwNsgProject
                 }
 		   	}
 
-		   	Dictionary<string, string> allnsgloc = new Dictionary<string, string>(); 
+		   	Dictionary<string, string> allnsgloc = new Dictionary<string, string>();
 		   	foreach (var nsg in nsgresult.value) {
 		   		if(!allnsgloc.ContainsKey(nsg.location)){
 		   			allnsgloc.Add(nsg.location, "yes");
@@ -215,7 +215,7 @@ namespace NwNsgProject
         static async Task<String> check_and_enable_flow_request(NetworkSecurityGroup nsg, String storageId, String loc_nw, String subs_id, String token, ILogger log){
         	string enable_flow_logs_url = "https://management.azure.com{0}/configureFlowLog?api-version=2021-06-01";
         	string query_flow_logs_url = "https://management.azure.com{0}/queryFlowLogStatus?api-version=2021-06-01";
-        	
+
 
         	var client = new SingleHttpClientInstance();
         	try
@@ -230,7 +230,7 @@ namespace NwNsgProject
                 checkReq.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 HttpResponseMessage check_response = await SingleHttpClientInstance.sendApiPostRequest(checkReq, token);
-                
+
                 if (check_response.IsSuccessStatusCode)
 				{
 				    string check_data =  await check_response.Content.ReadAsStringAsync();
@@ -238,7 +238,7 @@ namespace NwNsgProject
 				    if(check_result.properties.enabled){
 				    	return "false";
 				    }
-				    
+
 				} else{
 					return "false";
 				}
@@ -253,26 +253,26 @@ namespace NwNsgProject
             	properties.retentionPolicy = retention;
             	myObject.properties = properties;
             	content = new StringContent(myObject.ToString(), Encoding.UTF8, "application/json");
-            	
-                
+
+
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, String.Format(enable_flow_logs_url, loc_nw));
                 req.Content = content;
                 req.Headers.Accept.Clear();
                 req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 HttpResponseMessage response = await SingleHttpClientInstance.sendApiPostRequest(req, token);
-                
+
                 if (response.IsSuccessStatusCode)
 				{
 				    string data =  await response.Content.ReadAsStringAsync();
 				    return "true";
-				    
+
 				}
 
-            } 
+            }
             catch (System.Net.Http.HttpRequestException e)
             {
-                log.LogInformation("Ignore. Failed for some region");
+                log.LogInformation(e, "Ignore. Failed for some region");
             }
             return "false";
         }
@@ -299,7 +299,7 @@ namespace NwNsgProject
                 req.Headers.Accept.Clear();
                 req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await SingleHttpClientInstance.sendApiRequest(req, token);
-                
+
                 if (response.IsSuccessStatusCode)
 				{
 				    string data =  await response.Content.ReadAsStringAsync();
@@ -307,9 +307,9 @@ namespace NwNsgProject
 				    var is_deployment = await check_app_deployment(token, appNameStage1, subs_id, log);
 				    if(!is_deployment){
 				    	await listKeys(token, storage_account_name, storage_account_name_activity, appNameStage1, subs_id, log);
-				    } 
-				    return result.id; 	
-				    
+				    }
+				    return result.id;
+
 				}
 				else{
 					await create_resources(token, subs_id, location_codes[location], storage_account_name, location, log);
@@ -339,7 +339,7 @@ namespace NwNsgProject
 	            req.Content = content;
 
 			    HttpResponseMessage response = await SingleHttpClientInstance.sendApiPostRequest(req, token);
-			        
+
 	        }
 	        catch (System.Net.Http.HttpRequestException e)
             {
@@ -351,7 +351,7 @@ namespace NwNsgProject
         static async Task create_resources( String token, String subs_id, String location_code, String storage_account_name, String location, ILogger log){
 
         	string create_storage_account_url = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Storage/storageAccounts/{2}?api-version=2021-08-01";
-        	
+
         	string customerid = Util.GetEnvironmentVariable("customerId");
         	string resourceGroup = Util.GetEnvironmentVariable("avidResourceGroup");
         	string local = Util.GetEnvironmentVariable("local");
@@ -362,7 +362,7 @@ namespace NwNsgProject
         	var subscription_tag = subs_id.Replace("-","").Substring(0,8) + customerid.Replace("-","").Substring(0,8);
         	string appNameStage1 = local + "AvidFlowLogs" + subscription_tag  + location_code;
         	string storage_account_name_activity = local + "avidact" + subscription_tag;
-        	
+
         	string storage_json_string = @"{""sku"": {""name"": ""Standard_GRS""}, ""kind"": ""StorageV2"", ""location"": ""eastus"", ""properties"": {""allowBlobPublicAccess"": false}}";
         	var storage_json = JsonConvert.DeserializeObject<StorageAccountPutObj>(storage_json_string);
         	storage_json.location = location;
@@ -380,8 +380,8 @@ namespace NwNsgProject
 	            req.Content = content;
 
 			    HttpResponseMessage response = await SingleHttpClientInstance.sendApiPostRequest(req, token);
-			    
-	            if (response.IsSuccessStatusCode)    
+
+	            if (response.IsSuccessStatusCode)
 	            {
 
 	            	int milliseconds = 80000;
@@ -389,9 +389,9 @@ namespace NwNsgProject
 
 					await create_retention_policy(token, subs_id, storage_account_name, log);
 					await listKeys(token, storage_account_name, storage_account_name_activity, appNameStage1, subs_id, log);
-	                
+
 	            }
-	                
+
 	        }
 	        catch (System.Net.Http.HttpRequestException e)
             {
@@ -407,9 +407,9 @@ namespace NwNsgProject
             list_req.Headers.Accept.Clear();
             list_req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             HttpResponseMessage response_keys = await SingleHttpClientInstance.sendApiRequest(list_req, token);
-            
+
             string data_check =  await response_keys.Content.ReadAsStringAsync();
-            
+
             if (response_keys.IsSuccessStatusCode)
 			{
 			    string data =  await response_keys.Content.ReadAsStringAsync();
@@ -421,7 +421,7 @@ namespace NwNsgProject
 
 			   	Boolean check_deploy = await deploy_app(token, accountkey , storage_account_name, storage_account_name_activity, appNameStage1, subs_id, log);
 			}
-			
+
         }
 
         static async Task<Boolean> deploy_app(String token, String accountkey , String storage_account_name, String storage_account_name_activity, String appNameStage1, String subs_id, ILogger log){
@@ -461,9 +461,9 @@ namespace NwNsgProject
 	            req.Content = content;
 
 			    HttpResponseMessage response = await SingleHttpClientInstance.sendApiPostRequest(req, token);
-			    
+
 			    var check_resp = await response.Content.ReadAsStringAsync();
-			    
+
 			    if (response.IsSuccessStatusCode){
 			    	return true;
 			    }
@@ -484,8 +484,8 @@ namespace NwNsgProject
                 req.Headers.Accept.Clear();
                 req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await SingleHttpClientInstance.sendApiRequest(req, token);
-               
-                
+
+
                 if (response.IsSuccessStatusCode)
 				{
 				    return true;
@@ -511,7 +511,7 @@ namespace NwNsgProject
                 req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await SingleHttpClientInstance.sendApiRequest(req, token);
 
-                
+
 			}
 			catch (System.Net.Http.HttpRequestException e)
             {
@@ -525,7 +525,7 @@ namespace NwNsgProject
                 req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await SingleHttpClientInstance.sendApiRequest(req, token);
 
-                
+
 			}
 			catch (System.Net.Http.HttpRequestException e)
             {
@@ -548,14 +548,14 @@ namespace NwNsgProject
 
         	string appNameStage1 = local + "AvidFlowLogs" + subscription_tag  + location_codes[location];
 
-        	
+
         	try
         	{
         		HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, String.Format(fetch_storage_account_details, subs_id, resourceGroup, storage_account_name));
                 req.Headers.Accept.Clear();
                 req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await SingleHttpClientInstance.sendApiRequest(req, token);
-                
+
                 if (response.IsSuccessStatusCode)
 				{
 
