@@ -1,10 +1,13 @@
+using Azure;
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Extensions;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using Newtonsoft.Json;
@@ -21,8 +24,7 @@ namespace NwNsgProject
         [FunctionName("Stage3QueueTriggerActivity")]
         public static async Task Run(
             [QueueTrigger("activitystage2", Connection = "AzureWebJobsStorage")]Chunk inputChunk,
-            Binder binder,
-            ILogger log)
+            IBinder binder, ILogger log)
         {
             try
             {
@@ -33,24 +35,21 @@ namespace NwNsgProject
                     throw new ArgumentNullException("nsgSourceDataAccount", "Please supply in this setting the name of the connection string from which NSG logs should be read.");
                 }
 
-                var attributes = new Attribute[]
+                var blobClient = await binder.BindAsync<BlobClient>(new BlobAttribute(inputChunk.BlobName)
                 {
-                    new BlobAttribute(inputChunk.BlobName),
-                    new StorageAccountAttribute(nsgSourceDataAccount)
+                    Connection = nsgSourceDataAccount
+                });
+                 var range = new HttpRange(inputChunk.Start, inputChunk.Length);
+                var downloadOptions = new BlobDownloadOptions
+                {
+                    Range = range
                 };
-
+                BlobDownloadStreamingResult response = await blobClient.DownloadStreamingAsync(downloadOptions);
                 string nsgMessagesString;
-                try
+                using (var stream = response.Content)
+                using (var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true))
                 {
-                    byte[] nsgMessages = new byte[inputChunk.Length];
-                    CloudAppendBlob blob = await binder.BindAsync<CloudAppendBlob>(attributes);
-                    await blob.DownloadRangeToByteArrayAsync(nsgMessages, 0, inputChunk.Start, inputChunk.Length);
-                    nsgMessagesString = System.Text.Encoding.UTF8.GetString(nsgMessages);
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(string.Format("Error binding blob input: {0}", ex.Message));
-                    throw ex;
+                    nsgMessagesString = await reader.ReadToEndAsync();
                 }
 
                 // skip past the leading comma
@@ -72,7 +71,7 @@ namespace NwNsgProject
         public static async Task SendMessagesDownstream(string myMessages, ILogger log)
         {
             await obAvidSecure(myMessages, log);
-            
+
         }
 
         static async Task obAvidSecure(string newClientContent, ILogger log)
@@ -96,7 +95,7 @@ namespace NwNsgProject
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, avidAddress);
                 req.Headers.Accept.Clear();
                 req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                
+
                 req.Content = new StringContent(jsonString, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await SingleHttpClientInstance.SendToSplunk(req);
                 if (response.StatusCode != HttpStatusCode.OK)
@@ -116,7 +115,7 @@ namespace NwNsgProject
         }
 
 
-        
+
 
         public class SingleHttpClientInstance
         {
@@ -134,6 +133,6 @@ namespace NwNsgProject
                 return response;
             }
 
-        }      
+        }
     }
 }
