@@ -1,12 +1,15 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using Microsoft.Azure.Storage.Blob;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+
 
 namespace NwNsgProject
 {
@@ -16,9 +19,8 @@ namespace NwNsgProject
 
         [FunctionName("Stage1BlobTriggerActivity")]
         public static async Task Run(
-            [BlobTrigger("%blobContainerNameActivity%/resourceId=/SUBSCRIPTIONS/{subId}/y={blobYear}/m={blobMonth}/d={blobDay}/h={blobHour}/m={blobMinute}/PT1H.json", Connection = "nsgSourceDataConnection")]CloudAppendBlob myBlobActivity,
+            [BlobTrigger("%blobContainerNameActivity%/resourceId=/SUBSCRIPTIONS/{subId}/y={blobYear}/m={blobMonth}/d={blobDay}/h={blobHour}/m={blobMinute}/PT1H.json", Connection = "nsgSourceDataConnection")] AppendBlobClient myBlobActivity,
             [Queue("activitystage1", Connection = "AzureWebJobsStorage")] ICollector<Chunk> outputChunksActivity,
-            [Table("activitycheckpoints", Connection = "AzureWebJobsStorage")] CloudTable checkpointTableActivity,
             string subId, string blobYear, string blobMonth, string blobDay, string blobHour, string blobMinute,
             ILogger log)
         {
@@ -41,11 +43,18 @@ namespace NwNsgProject
 
                 var blobDetails = new BlobDetailsActivity(subId, blobYear, blobMonth, blobDay, blobHour, blobMinute);
 
+                string storageConnectionString = Util.GetEnvironmentVariable("AzureWebJobsStorage");
+                // Create a TableClient instance
+                TableClient tableClient = new TableClient(storageConnectionString, "activitycheckpoints");
+                // Create table if not exist
+                await tableClient.CreateIfNotExistsAsync();
+
                 // get checkpoint
-                Checkpoint checkpoint = Checkpoint.GetCheckpointActivity(blobDetails, checkpointTableActivity);
+                Checkpoint checkpoint = await Checkpoint.GetCheckpointActivity(blobDetails, tableClient);
                 // break up the block list into 10k chunks
 
-                long blobSize = myBlobActivity.Properties.Length;
+                var blobProperties = await myBlobActivity.GetPropertiesAsync();
+                long blobSize = blobProperties.Value.ContentLength;
                 long chunklength = blobSize - checkpoint.StartingByteOffset;
                 if(chunklength >10)
                 {
@@ -58,7 +67,7 @@ namespace NwNsgProject
                             BlobAccountConnectionName = nsgSourceDataAccount
                         };
 
-                    checkpoint.PutCheckpointActivity(checkpointTableActivity, blobSize);
+                    checkpoint.PutCheckpointActivity(tableClient, blobSize);
                     outputChunksActivity.Add(newchunk);
                 }
             }

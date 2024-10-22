@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using Newtonsoft.Json;
@@ -272,7 +272,7 @@ namespace NwNsgProject
             } 
             catch (System.Net.Http.HttpRequestException e)
             {
-                log.LogInformation("Ignore. Failed for some region");
+                log.LogInformation(e, "Ignore. Failed for some region");
             }
             return "false";
         }
